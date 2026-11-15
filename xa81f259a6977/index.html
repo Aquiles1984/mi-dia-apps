@@ -1,0 +1,543 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b0e1c">
+<title>Eric · Mi día</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Eric">
+<style>
+:root{--fondo:#0b0e1c;--tarjeta:rgba(255,255,255,.06);--texto:#f1f3fb;--suave:#a3aad0;--acento:#7c93ff;--borde:rgba(255,255,255,.12);--rojo:#f87171}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{background:var(--fondo)}
+body{margin:0;font-family:Inter,-apple-system,"Segoe UI",system-ui,sans-serif;background:var(--fondo);color:var(--texto);font-size:16px;line-height:1.4;padding-bottom:84px}
+.fondo{position:fixed;inset:0;z-index:-1;background:radial-gradient(circle at 12% 12%,rgba(124,147,255,.25),transparent 45%),radial-gradient(circle at 90% 85%,rgba(167,139,250,.18),transparent 45%)}
+a{color:var(--acento);text-decoration:none}
+.top{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;position:sticky;top:0;z-index:10;background:rgba(11,14,28,.8);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);border-bottom:1px solid var(--borde)}
+.marca{color:var(--texto);font-weight:800;font-size:1.15rem}
+.fab{width:42px;height:42px;border-radius:50%;border:0;background:var(--acento);color:#fff;font-size:1.5rem;line-height:1}
+main{max-width:720px;margin:0 auto;padding:12px 16px}
+h1{font-size:1.5rem;margin:.4em 0 .2em}h2{font-size:1.05rem;margin:1.3em 0 .5em;color:var(--suave)}h3{margin:.2em 0}
+.meta{color:var(--suave);font-size:.85rem}.desc{color:var(--suave)}.vacio{color:var(--suave);text-align:center;padding:24px 0}
+.card{background:var(--tarjeta);border:1px solid var(--borde);border-radius:20px;padding:14px;margin:10px 0}
+.aviso{display:block;background:rgba(124,147,255,.14);border:1px solid var(--borde);border-radius:16px;padding:12px 14px;margin:10px 0;color:var(--texto)}
+.lista{list-style:none;margin:0;padding:0}.lista li{display:flex;align-items:center;gap:8px;padding:9px 0;border-top:1px solid var(--borde);flex-wrap:wrap}.lista li:first-child{border-top:0}
+.lista li.hecho>span:not(.chip),.lista li.hecho>.grow{text-decoration:line-through;color:var(--suave)}
+.card.lista{padding:6px 14px}
+.lista li>a.meta{flex-basis:100%;padding-left:34px;margin-top:-6px}
+.grow{flex:1;min-width:0}
+.check{background:none;border:0;font-size:1.45rem;color:var(--acento);padding:0 2px;line-height:1}
+.mini{background:none;border:0;font-size:1rem;padding:4px;opacity:.7}
+.hora{font-weight:700;min-width:48px;color:var(--acento)}
+.sesion{display:flex;gap:10px;align-items:center}.tit{color:var(--texto);font-weight:600}
+.chip{font-size:.72rem;background:rgba(255,255,255,.1);border-radius:99px;padding:2px 9px;color:var(--suave)}.chip.rojo{background:rgba(248,113,113,.2);color:var(--rojo)}
+.enlace{font-size:1.1rem}
+.fila{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.centrar{justify-content:center;margin-top:14px}
+.dos{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.form label{display:block;font-size:.85rem;color:var(--suave);margin:8px 0}
+input,select,textarea{font-size:16px;-webkit-appearance:none;appearance:none;width:100%;background:rgba(255,255,255,.07);border:1px solid var(--borde);border-radius:12px;color:var(--texto);padding:10px 12px;font:inherit;margin-top:4px}
+.fila input,.fila select{margin-top:0;width:auto}.fila .grow{width:auto}.fecha{max-width:150px}
+input[type=checkbox]{width:auto;margin-right:8px}input[type=file]{padding:8px}
+select option{background:#1a1e33}
+.btn{background:var(--acento);color:#fff;border:0;border-radius:99px;padding:11px 20px;font:inherit;font-weight:600;display:inline-block;text-align:center}
+.btn.peque{padding:7px 14px;font-size:.88rem}.btn.gris{background:rgba(255,255,255,.12);color:var(--texto)}
+.btn.peligro{background:rgba(248,113,113,.18);color:var(--rojo);margin-top:18px}
+.volver{display:inline-block;margin-top:6px;font-size:.9rem}
+.barra{height:8px;background:rgba(255,255,255,.1);border-radius:99px;overflow:hidden;margin:8px 0 2px}.barra i{display:block;height:100%;background:var(--acento);border-radius:99px}
+.interruptor{display:block;margin:10px 0;color:var(--suave);font-size:.9rem}
+details.card summary{cursor:pointer;font-weight:600}
+.semana{display:grid;gap:8px;margin-top:10px}.dia{padding:8px 10px;border-radius:12px;background:rgba(255,255,255,.04)}.dia.hoy{outline:1px solid var(--acento)}.dia h4{margin:0 0 4px}.dia ul{margin:0;padding-left:18px;font-size:.88rem}.dia li.cancelada a{text-decoration:line-through;color:var(--suave)}
+.tarjeta{text-align:center;padding:26px 16px}.pregunta{font-size:1.25rem;font-weight:700}.respuesta{margin-top:16px;padding-top:14px;border-top:1px solid var(--borde);color:var(--suave);white-space:pre-wrap}
+.buscar{margin-bottom:6px}.prompt[hidden]{display:none}
+pre.texto{white-space:pre-wrap;word-break:break-word;font:inherit;background:rgba(0,0,0,.25);border-radius:12px;padding:10px 12px;font-size:.88rem;margin:8px 0}
+.nav{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:space-around;background:rgba(11,14,28,.92);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);border-top:1px solid var(--borde);padding:6px 4px calc(6px + env(safe-area-inset-bottom));z-index:10}
+.nav a{flex:1;text-align:center;color:var(--suave);font-size:1.3rem;position:relative;padding:2px 0}.nav a span{display:block;font-size:.65rem}.nav a.act{color:var(--texto)}.nav a.act span{color:var(--acento);font-weight:700}
+.nav b{position:absolute;top:-2px;right:22%;background:var(--rojo);color:#fff;font-size:.65rem;border-radius:99px;padding:0 6px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:20;display:flex;align-items:flex-end;justify-content:center;padding:12px}.modal[hidden]{display:none}.modal .card{width:100%;max-width:520px;background:#1a1e33}
+.toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:#1a1e33;border:1px solid var(--borde);padding:10px 18px;border-radius:99px;z-index:30;font-size:.9rem}.toast[hidden]{display:none}
+
+</style>
+</head>
+<body>
+<div class="fondo"></div>
+<header class="top"><a class="marca" href="#hoy">Eric</a><button class="fab" data-a="abrirAnadir" aria-label="Añadir">＋</button></header>
+<main id="vista"></main>
+<nav id="nav" class="nav"></nav>
+<div id="anadir" class="modal" hidden>
+  <form id="formAnadir" class="card form" data-f="anadir">
+    <h3>Añadir tarea</h3>
+    <label>¿Qué hay que hacer?<input name="texto" required autocomplete="off"></label>
+    <div class="dos"><label>Cuándo<select name="cuando"><option value="hoy">Hoy</option><option value="manana">Mañana</option><option value="">Sin fecha</option></select></label>
+    <label>Objetivo<select name="objetivo_id"></select></label></div>
+    <div class="fila"><button class="btn">Añadir</button><button type="button" class="btn gris" data-a="cerrarAnadir">Cerrar</button></div>
+  </form>
+</div>
+<div id="toast" class="toast" hidden></div>
+<script>window.PERFIL = {"id": "eric", "nombre": "Eric", "corto": "Eric", "color": "#34d399", "modulos": ["hoy", "planning", "objetivos", "repaso"], "plataforma": "ios"};</script>
+<script>
+(function () {
+'use strict';
+const P = window.PERFIL;
+const KEY = 'fam_' + P.id;
+const DIAS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+const CATS = { entrenamiento: '💪', nutricion: '🥗', bienestar: '🧠', educacion: '📚', general: '📌' };
+const CAT_NOMBRE = { entrenamiento: 'Entrenamiento', nutricion: 'Nutrición', bienestar: 'Bienestar', educacion: 'Estudios', general: 'General' };
+const DIAS_CAJA = { 1: 1, 2: 2, 3: 4, 4: 8, 5: 16 };
+const MAX_PASOS_HOY = 3;
+const NAV = {
+  hoy: ['🏠', 'Hoy'], planning: ['🗓️', 'Planning'], objetivos: ['🎯', 'Objetivos'],
+  repaso: ['🧠', 'Repaso'], formacion: ['🤖', 'Formación'],
+};
+
+// ---------- estado ----------
+function vacio() {
+  return { version: 1, perfil: P.id, sig: 1, ultima_copia: null, objetivos: [], tareas: [], programas: [],
+           planning: [], excepciones: [], registros: {}, prompts: [], notas: [] };
+}
+function cargar() {
+  try { const t = localStorage.getItem(KEY); if (t) return Object.assign(vacio(), JSON.parse(t)); } catch (e) {}
+  return vacio();
+}
+let S = cargar();
+function guardar() {
+  try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { toast('No se pudo guardar en este navegador'); }
+}
+function nid() { S.sig += 1; return S.sig; }
+
+// ---------- utilidades ----------
+const $ = (s, r) => (r || document).querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const pad = n => String(n).padStart(2, '0');
+const iso = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+const hoyIso = () => iso(new Date());
+const sumaDias = (d, n) => { const r = new Date(d.getFullYear(), d.getMonth(), d.getDate()); r.setDate(r.getDate() + n); return r; };
+const idxDia = d => (d.getDay() + 6) % 7;
+const fechaDe = s => new Date(s + 'T00:00:00');
+const num = v => parseInt(v, 10);
+function fechaCorta(s) { if (!s) return ''; const d = fechaDe(s); return DIAS[idxDia(d)].slice(0, 3) + ' ' + d.getDate() + '/' + (d.getMonth() + 1); }
+function toast(msg) {
+  const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toast.h);
+  toast.h = setTimeout(() => { t.hidden = true; }, 2600);
+}
+function icono(cat) { return CATS[cat] || '📌'; }
+function opts(lista, sel) { return lista.map(([v, t]) => `<option value="${esc(v)}"${String(v) === String(sel) ? ' selected' : ''}>${esc(t)}</option>`).join(''); }
+function enlaceHtml(url) {
+  if (!url) return '';
+  return `<a class="enlace" href="${esc(url)}" target="_blank" rel="noopener">${/youtu/.test(url) ? '▶️' : '🔗'}</a>`;
+}
+
+// ---------- consultas ----------
+const objetivo = id => S.objetivos.find(o => o.id === id);
+const programa = id => S.programas.find(p => p.id === id);
+const sesion = id => S.planning.find(p => p.id === id);
+function pasoPorId(id) { for (const p of S.programas) { const s = p.pasos.find(x => x.id === id); if (s) return { p, s }; } return null; }
+function tarjetaPorId(id) { for (const p of S.programas) { const c = p.tarjetas.find(x => x.id === id); if (c) return { p, c }; } return null; }
+function progreso(p) { const t = p.pasos.length; const h = p.pasos.filter(s => s.completado).length; return { t, h, pct: t ? Math.round(100 * h / t) : 0 }; }
+function siguientePaso(p) { return p.pasos.find(s => !s.completado); }
+function tarjetasPendientes(pid) {
+  const hoy = hoyIso(); const out = [];
+  S.programas.forEach(p => {
+    if (pid ? p.id !== pid : !p.en_hoy) return;
+    p.tarjetas.forEach(c => { if (c.proxima <= hoy) out.push({ p, c }); });
+  });
+  return out.sort((a, b) => a.c.caja - b.c.caja || a.c.proxima.localeCompare(b.c.proxima));
+}
+function agendaSemana() {
+  const lunes = sumaDias(new Date(), -idxDia(new Date()));
+  const sem = [[], [], [], [], [], [], []];
+  S.planning.forEach(p => {
+    const fn = iso(sumaDias(lunes, p.dia));
+    const ex = S.excepciones.find(x => x.planning_id === p.id && x.fecha_original === fn);
+    let dest = p.dia; const e = Object.assign({}, p, { fecha: fn });
+    if (ex) {
+      e.nota = ex.nota;
+      if (ex.cancelada) e.cancelada = true;
+      else {
+        e.puntual = true;
+        if (ex.nueva_hora) e.hora = ex.nueva_hora;
+        if (ex.nueva_fecha) { dest = idxDia(fechaDe(ex.nueva_fecha)); e.fecha = ex.nueva_fecha; }
+      }
+    }
+    sem[dest].push(e);
+  });
+  sem.forEach(l => l.sort((a, b) => (a.hora || '').localeCompare(b.hora || '')));
+  return sem;
+}
+
+// ---------- vistas ----------
+function vHoy() {
+  const hoy = hoyIso(); const idx = idxDia(new Date());
+  const sem = agendaSemana();
+  const sesiones = sem[idx].filter(e => !e.cancelada);
+  const tareas = S.tareas.filter(t => t.fecha && t.fecha <= hoy && (!t.completada || t.fecha_completado === hoy));
+  const pasos = S.programas.filter(p => p.en_hoy && siguientePaso(p));
+  const nTarj = tarjetasPendientes().length;
+  const vacioTodo = !S.objetivos.length && !S.planning.length;
+  const dias = S.ultima_copia ? Math.floor((Date.now() - new Date(S.ultima_copia).getTime()) / 864e5) : null;
+  let h = `<h1>Hola, ${esc(P.corto)} 👋</h1><p class="meta">${DIAS[idx]} ${new Date().getDate()}</p>`;
+  if (vacioTodo) h += `<a class="aviso" href="#ajustes">📥 <strong>Aún no tienes datos.</strong> Importa tu copia en Ajustes.</a>`;
+  else if (dias === null || dias >= 7) h += `<a class="aviso" href="#ajustes">💾 <strong>${dias === null ? 'Aún no has hecho copia de seguridad' : 'Última copia hace ' + dias + ' días'}.</strong> Hazla en Ajustes.</a>`;
+  if (nTarj && P.modulos.includes('repaso')) h += `<a class="aviso" href="#repaso">🧠 <strong>${nTarj} tarjeta(s) de repaso</strong></a>`;
+  if (sesiones.length) {
+    h += '<h2>🕒 Con hora</h2>';
+    sesiones.forEach(e => {
+      const hechos = e.ejercicios.filter(x => S.registros[x.id + '|' + hoy]).length;
+      h += `<article class="card"><header class="sesion"><span class="hora">${esc(e.hora || '—')}</span>
+        <div class="grow"><a class="tit" href="#sesion/${e.id}">${icono(e.categoria)} ${esc(e.titulo)}</a>${e.puntual ? ' <span class="chip">puntual</span>' : ''}
+        <div class="meta">${e.duracion_min ? e.duracion_min + ' min' : ''}${e.ejercicios.length ? ` · ${hechos}/${e.ejercicios.length} hechos` : ''}</div></div></header>`;
+      if (e.ejercicios.length) {
+        h += '<ul class="lista">' + e.ejercicios.map(x => {
+          const ok = S.registros[x.id + '|' + hoy];
+          return `<li class="${ok ? 'hecho' : ''}">  <button class="check" data-a="toggleEj" data-id="${x.id}">${ok ? '☑' : '☐'}</button><span class="grow">${esc(x.texto)}</span>${enlaceHtml(x.enlace)}</li>`;
+        }).join('') + '</ul>';
+      } else if (e.detalle) h += `<p class="desc">${esc(e.detalle)}</p>`;
+      h += '</article>';
+    });
+  }
+  if (tareas.length || pasos.length) {
+    h += '<h2>📋 Durante el día</h2><ul class="lista card">';
+    tareas.forEach(t => {
+      const o = objetivo(t.objetivo_id);
+      h += `<li class="${t.completada ? 'hecho' : ''}"><button class="check" data-a="toggleTarea" data-id="${t.id}">${t.completada ? '☑' : '☐'}</button><span class="grow">${esc(t.texto)}</span>${enlaceHtml(t.enlace)}
+        ${!t.completada && t.fecha < hoy ? `<span class="chip rojo">atrasada ${fechaCorta(t.fecha)}</span>` : ''}${o ? `<a class="meta" href="#objetivo/${o.id}">${esc(o.titulo)}</a>` : ''}</li>`;
+    });
+    const filaPaso = p => {
+      const s = siguientePaso(p); const pr = progreso(p);
+      return `<li><button class="check" data-a="togglePaso" data-id="${s.id}">☐</button><span class="grow">${esc(s.titulo)}</span>${enlaceHtml(s.enlace)}<a class="meta" href="#programa/${p.id}">${esc(p.titulo)} · ${pr.h}/${pr.t}</a></li>`;
+    };
+    pasos.slice(0, MAX_PASOS_HOY).forEach(p => { h += filaPaso(p); });
+    h += '</ul>';
+    if (pasos.length > MAX_PASOS_HOY) h += `<details class="card"><summary>${pasos.length - MAX_PASOS_HOY} programa(s) más en curso</summary><ul class="lista">${pasos.slice(MAX_PASOS_HOY).map(filaPaso).join('')}</ul></details>`;
+  }
+  if (!sesiones.length && !tareas.length && !pasos.length && !vacioTodo) h += '<p class="vacio">Hoy no tienes nada apuntado. Usa ＋ para añadir algo.</p>';
+  h += '<details class="card"><summary>🗓️ Ver la semana</summary><div class="semana">';
+  DIAS.forEach((d, i) => {
+    h += `<div class="dia${i === idx ? ' hoy' : ''}"><h4>${d}</h4>` + (sem[i].length ? '<ul>' + sem[i].map(e =>
+      `<li class="${e.cancelada ? 'cancelada' : ''}"><a href="#sesion/${e.id}">${e.hora ? esc(e.hora) + ' — ' : ''}${esc(e.titulo)}</a></li>`).join('') + '</ul>' : '<p class="meta">—</p>') + '</div>';
+  });
+  return h + '</div></details>';
+}
+
+function vPlanning() {
+  const sem = agendaSemana();
+  let h = '<h1>🗓️ Planning</h1><p class="meta">Tu semana fija. Toca una sesión para cambiarla.</p>';
+  DIAS.forEach((d, i) => {
+    const fijas = S.planning.filter(p => p.dia === i).sort((a, b) => (a.hora || '').localeCompare(b.hora || ''));
+    h += `<section class="card"><header class="fila"><h3 class="grow">${d}</h3><a class="btn peque" href="#sesion/nueva-${i}">＋ Sesión</a></header>`;
+    h += fijas.length ? '<ul class="lista">' + fijas.map(p => `<li><span class="hora">${esc(p.hora || '—')}</span><a class="grow" href="#sesion/${p.id}">${icono(p.categoria)} ${esc(p.titulo)}</a><span class="meta">${p.duracion_min ? p.duracion_min + ' min' : ''}</span></li>`).join('') + '</ul>' : '<p class="meta">—</p>';
+    h += '</section>';
+  });
+  return h;
+}
+
+function vSesion(arg) {
+  const nueva = /^nueva-(\d)$/.exec(arg);
+  const p = nueva ? { id: 0, dia: num(nueva[1]), hora: '', categoria: 'general', titulo: '', duracion_min: '', detalle: '', enlace: '', objetivo_id: null, ejercicios: [] } : sesion(num(arg));
+  if (!p) return '<p class="vacio">Sesión no encontrada.</p>';
+  let h = `<a class="volver" href="#planning">← Planning</a><h1>${nueva ? 'Nueva sesión' : esc(p.titulo)}</h1>
+  <form class="card form" data-f="sesion" data-id="${p.id}">
+    <label>Título<input name="titulo" value="${esc(p.titulo)}" required></label>
+    <div class="dos"><label>Día<select name="dia">${opts(DIAS.map((d, i) => [i, d]), p.dia)}</select></label>
+    <label>Hora<input type="time" name="hora" value="${esc(p.hora)}"></label></div>
+    <div class="dos"><label>Duración (min)<input type="number" name="duracion_min" min="0" value="${esc(p.duracion_min || '')}"></label>
+    <label>Tipo<select name="categoria">${opts(Object.keys(CATS).map(k => [k, CATEGORIA(k)]), p.categoria)}</select></label></div>
+    <label>Objetivo<select name="objetivo_id"><option value="">—</option>${opts(S.objetivos.map(o => [o.id, o.titulo]), p.objetivo_id)}</select></label>
+    <label>Detalle<textarea name="detalle" rows="3">${esc(p.detalle)}</textarea></label>
+    <label>Enlace<input name="enlace" value="${esc(p.enlace || '')}" inputmode="url"></label>
+    <button class="btn">Guardar</button></form>`;
+  if (!nueva) {
+    h += '<h2>Pasos de la sesión</h2><section class="card"><ul class="lista">' + p.ejercicios.map(x =>
+      `<li><span class="grow">${esc(x.texto)}</span>${enlaceHtml(x.enlace)}<button class="mini" data-a="editarTexto" data-tipo="ej" data-id="${x.id}">✏️</button><button class="mini" data-a="borrar" data-tipo="ej" data-id="${x.id}">🗑️</button></li>`).join('') + '</ul>' +
+      `<form class="fila" data-f="ejercicio" data-id="${p.id}"><input class="grow" name="texto" placeholder="Nuevo paso" required><button class="btn peque">＋</button></form></section>`;
+    const lunes = sumaDias(new Date(), -idxDia(new Date())); const fn = iso(sumaDias(lunes, p.dia));
+    const ex = S.excepciones.find(x => x.planning_id === p.id && x.fecha_original === fn);
+    h += `<h2>Cambio solo esta semana</h2><form class="card form" data-f="puntual" data-id="${p.id}" data-fn="${fn}">
+      ${ex ? `<p class="meta">Hay un cambio puntual (${esc(ex.cancelada ? 'cancelada' : 'movida')}).</p>` : ''}
+      <div class="dos"><label>Nueva hora<input type="time" name="nueva_hora" value="${esc(ex && ex.nueva_hora || '')}"></label>
+      <label>Nuevo día<input type="date" name="nueva_fecha" value="${esc(ex && ex.nueva_fecha || '')}"></label></div>
+      <div class="fila"><button class="btn peque" name="op" value="mover">Aplicar</button><button class="btn peque gris" name="op" value="cancelar">Cancelar esta semana</button>${ex ? '<button class="btn peque gris" name="op" value="quitar">Quitar cambio</button>' : ''}</div></form>
+    <button class="btn peligro" data-a="borrar" data-tipo="sesion" data-id="${p.id}">Eliminar sesión</button>`;
+  }
+  return h;
+}
+function CATEGORIA(k) { return icono(k) + ' ' + (CAT_NOMBRE[k] || k); }
+
+function vObjetivos() {
+  let h = '<h1>🎯 Objetivos</h1>';
+  const porCat = {};
+  S.objetivos.forEach(o => { (porCat[o.categoria] = porCat[o.categoria] || []).push(o); });
+  Object.keys(porCat).forEach(cat => {
+    h += `<h2>${CATEGORIA(cat)}</h2><ul class="lista card">` + porCat[cat].map(o => {
+      const pend = S.tareas.filter(t => t.objetivo_id === o.id && !t.completada).length;
+      const progs = S.programas.filter(p => p.objetivo_id === o.id);
+      return `<li><a class="grow" href="#objetivo/${o.id}">${esc(o.titulo)}</a><span class="meta">${progs.length ? progs.length + ' programa(s) · ' : ''}${pend} pendiente(s)</span></li>`;
+    }).join('') + '</ul>';
+  });
+  if (!S.objetivos.length) h += '<p class="vacio">Sin objetivos todavía.</p>';
+  return h + `<h2>Nuevo objetivo</h2><form class="card form" data-f="objetivo"><label>Título<input name="titulo" required></label>
+    <label>Tipo<select name="categoria">${opts(Object.keys(CATS).map(k => [k, CATEGORIA(k)]), 'general')}</select></label><button class="btn">Crear</button></form>`;
+}
+
+function vObjetivo(id) {
+  const o = objetivo(num(id)); if (!o) return '<p class="vacio">Objetivo no encontrado.</p>';
+  const tareas = S.tareas.filter(t => t.objetivo_id === o.id).sort((a, b) => a.completada - b.completada);
+  const progs = S.programas.filter(p => p.objetivo_id === o.id);
+  const ses = S.planning.filter(p => p.objetivo_id === o.id);
+  let h = `<a class="volver" href="#objetivos">← Objetivos</a><h1>${icono(o.categoria)} ${esc(o.titulo)}</h1>${o.descripcion ? `<p class="desc">${esc(o.descripcion)}</p>` : ''}`;
+  h += '<h2>Tareas</h2><section class="card"><ul class="lista">' + (tareas.map(t =>
+    `<li class="${t.completada ? 'hecho' : ''}"><button class="check" data-a="toggleTarea" data-id="${t.id}">${t.completada ? '☑' : '☐'}</button><span class="grow">${esc(t.texto)}</span>${enlaceHtml(t.enlace)}${t.fecha ? `<span class="chip">${fechaCorta(t.fecha)}</span>` : ''}<button class="mini" data-a="editarTexto" data-tipo="tarea" data-id="${t.id}">✏️</button><button class="mini" data-a="borrar" data-tipo="tarea" data-id="${t.id}">🗑️</button></li>`).join('') || '<li class="meta">Sin tareas.</li>') + '</ul>' +
+    `<form class="fila" data-f="tarea" data-id="${o.id}"><input class="grow" name="texto" placeholder="Nueva tarea" required><input type="date" name="fecha" class="fecha"><button class="btn peque">＋</button></form></section>`;
+  h += '<h2>Programas</h2><section class="card"><ul class="lista">' + (progs.map(p => { const pr = progreso(p); return `<li><a class="grow" href="#programa/${p.id}">${esc(p.titulo)}</a><span class="meta">${pr.h}/${pr.t} · ${pr.pct}%</span></li>`; }).join('') || '<li class="meta">Sin programas.</li>') + '</ul>' +
+    `<form class="fila" data-f="programa" data-id="${o.id}"><input class="grow" name="titulo" placeholder="Nuevo programa" required><button class="btn peque">＋</button></form></section>`;
+  if (ses.length) h += '<h2>Sesiones</h2><ul class="lista card">' + ses.map(p => `<li><span class="meta">${DIAS[p.dia].slice(0, 3)} ${esc(p.hora)}</span><a class="grow" href="#sesion/${p.id}">${esc(p.titulo)}</a></li>`).join('') + '</ul>';
+  h += `<details class="card"><summary>✏️ Editar objetivo</summary><form class="form" data-f="objetivoEditar" data-id="${o.id}">
+    <label>Título<input name="titulo" value="${esc(o.titulo)}" required></label><label>Descripción<textarea name="descripcion" rows="3">${esc(o.descripcion)}</textarea></label>
+    <label>Tipo<select name="categoria">${opts(Object.keys(CATS).map(k => [k, CATEGORIA(k)]), o.categoria)}</select></label><button class="btn">Guardar</button></form></details>
+    <button class="btn peligro" data-a="borrar" data-tipo="objetivo" data-id="${o.id}">Eliminar objetivo</button>`;
+  return h;
+}
+
+function vPrograma(id) {
+  const p = programa(num(id)); if (!p) return '<p class="vacio">Programa no encontrado.</p>';
+  const o = objetivo(p.objetivo_id); const pr = progreso(p);
+  const pend = tarjetasPendientes(p.id).length;
+  let h = `<a class="volver" href="#objetivo/${p.objetivo_id}">← ${esc(o ? o.titulo : 'Objetivo')}</a><h1>${esc(p.titulo)}</h1>
+    <div class="barra"><i style="width:${pr.pct}%"></i></div><p class="meta">${pr.h}/${pr.t} pasos · ${pr.pct}%</p>
+    <label class="interruptor"><input type="checkbox" data-a="enHoy" data-id="${p.id}" ${p.en_hoy ? 'checked' : ''}> Mostrar su siguiente paso en Hoy</label>
+    <h2>Pasos</h2><section class="card"><ul class="lista">` + (p.pasos.map(s =>
+    `<li class="${s.completado ? 'hecho' : ''}"><button class="check" data-a="togglePaso" data-id="${s.id}">${s.completado ? '☑' : '☐'}</button><span class="grow">${esc(s.titulo)}</span>${enlaceHtml(s.enlace)}<button class="mini" data-a="editarTexto" data-tipo="paso" data-id="${s.id}">✏️</button><button class="mini" data-a="borrar" data-tipo="paso" data-id="${s.id}">🗑️</button></li>`).join('') || '<li class="meta">Sin pasos.</li>') + '</ul>' +
+    `<form class="fila" data-f="paso" data-id="${p.id}"><input class="grow" name="titulo" placeholder="Nuevo paso" required><input name="enlace" class="fecha" placeholder="Enlace" inputmode="url"><button class="btn peque">＋</button></form></section>`;
+  if (P.modulos.includes('repaso')) {
+    h += `<h2>Tarjetas de repaso (${p.tarjetas.length})</h2><section class="card">${p.tarjetas.length ? `<a class="btn peque" href="#repaso/${p.id}">🧠 Repasar${pend ? ' (' + pend + ')' : ''}</a>` : ''}<ul class="lista">` +
+      p.tarjetas.map(c => `<li><span class="grow"><strong>${esc(c.pregunta)}</strong><br><span class="meta">${esc(c.respuesta)}</span></span><span class="chip">caja ${c.caja}</span><button class="mini" data-a="borrar" data-tipo="tarjeta" data-id="${c.id}">🗑️</button></li>`).join('') + '</ul>' +
+      `<form class="form" data-f="tarjeta" data-id="${p.id}"><label>Pregunta<input name="pregunta" required></label><label>Respuesta<textarea name="respuesta" rows="2" required></textarea></label><button class="btn peque">＋ Tarjeta</button></form></section>`;
+  }
+  return h + `<button class="btn peligro" data-a="borrar" data-tipo="programa" data-id="${p.id}">Eliminar programa</button>`;
+}
+
+let repasoVer = false;
+function vRepaso(arg) {
+  const pid = arg ? num(arg) : null; const cola = tarjetasPendientes(pid);
+  let h = '<h1>🧠 Repaso</h1>';
+  if (!cola.length) {
+    const prox = []; S.programas.forEach(p => p.tarjetas.forEach(c => prox.push(c.proxima))); prox.sort();
+    return h + `<p class="vacio">🎉 Nada pendiente.${prox.length ? ' Próxima tarjeta: ' + fechaCorta(prox.find(x => x > hoyIso()) || prox[0]) + '.' : ''}</p>`;
+  }
+  const { p, c } = cola[0];
+  h += `<p class="meta">${esc(p.titulo)} · quedan ${cola.length}</p><article class="card tarjeta"><div class="pregunta">${esc(c.pregunta)}</div>`;
+  if (repasoVer) h += `<div class="respuesta">${esc(c.respuesta)}</div><div class="fila centrar"><button class="btn gris" data-a="responder" data-id="${c.id}" data-ok="0">No lo sé</button><button class="btn" data-a="responder" data-id="${c.id}" data-ok="1">Lo sé</button></div>`;
+  else h += '<div class="fila centrar"><button class="btn" data-a="verRespuesta">Ver respuesta</button></div>';
+  return h + '</article>';
+}
+
+function vFormacion() {
+  const progs = S.programas.filter(p => { const o = objetivo(p.objetivo_id); return o && /inteligencia artificial|\bIA\b/i.test(o.titulo); });
+  let h = '<h1>🤖 Formación en IA</h1>';
+  if (progs.length) h += '<h2>Programas</h2><ul class="lista card">' + progs.map(p => { const pr = progreso(p); return `<li><a class="grow" href="#programa/${p.id}">${esc(p.titulo)}</a><span class="meta">${pr.h}/${pr.t}</span></li>`; }).join('') + '</ul>';
+  h += `<h2>Biblioteca de prompts</h2><input id="buscar" class="buscar" placeholder="Buscar prompt…" type="search">`;
+  h += S.prompts.map(x => `<article class="card prompt" data-buscar="${esc((x.titulo + ' ' + x.texto + ' ' + (x.etiquetas || '') + ' ' + (x.herramienta || '')).toLowerCase())}">
+    <header class="fila"><strong class="grow">${esc(x.titulo)}</strong><span class="chip">${esc(x.herramienta || '')}</span></header>
+    <pre class="texto">${esc(x.texto)}</pre>${x.nota ? `<p class="meta">${esc(x.nota)}</p>` : ''}${x.etiquetas ? `<p class="meta">🏷️ ${esc(x.etiquetas)}</p>` : ''}
+    <div class="fila"><button class="btn peque" data-a="copiar" data-id="${x.id}">📋 Copiar</button><a class="btn peque gris" href="#prompt/${x.id}">Editar</a></div></article>`).join('');
+  return h + '<a class="btn" href="#prompt/nuevo">＋ Nuevo prompt</a>';
+}
+function vPrompt(arg) {
+  const nuevo = arg === 'nuevo'; const x = nuevo ? { id: 0, titulo: '', texto: '', herramienta: 'Claude', etiquetas: '', nota: '' } : S.prompts.find(p => p.id === num(arg));
+  if (!x) return '<p class="vacio">Prompt no encontrado.</p>';
+  return `<a class="volver" href="#formacion">← Formación</a><h1>${nuevo ? 'Nuevo prompt' : 'Editar prompt'}</h1><form class="card form" data-f="prompt" data-id="${x.id}">
+    <label>Título<input name="titulo" value="${esc(x.titulo)}" required></label>
+    <label>Herramienta<select name="herramienta">${opts(['Claude', 'ChatGPT', 'Gemini', 'Copilot', 'Otra'].map(v => [v, v]), x.herramienta)}</select></label>
+    <label>Texto<textarea name="texto" rows="8" required>${esc(x.texto)}</textarea></label>
+    <label>Etiquetas<input name="etiquetas" value="${esc(x.etiquetas || '')}"></label><label>Nota<input name="nota" value="${esc(x.nota || '')}"></label>
+    <button class="btn">Guardar</button></form>${nuevo ? '' : `<button class="btn peligro" data-a="borrar" data-tipo="prompt" data-id="${x.id}">Eliminar</button>`}`;
+}
+
+function vAjustes() {
+  const c = S.ultima_copia ? new Date(S.ultima_copia).toLocaleString('es-ES') : 'nunca';
+  return `<h1>⚙️ Ajustes</h1><section class="card form"><h3>💾 Copia de seguridad</h3><p class="meta">Última copia: ${c}. Tus datos solo están en este móvil: haz copia con frecuencia.</p>
+    <div class="fila"><button class="btn peque" data-a="compartir">Compartir copia</button>${P.plataforma === 'ios' ? '' : '<button class="btn peque gris" data-a="exportar">Descargar</button>'}<button class="btn peque gris" data-a="copiarTexto">Copiar como texto</button></div></section>
+    <section class="card form"><h3>📥 Importar copia</h3><label>Archivo<input type="file" id="archivo" accept=".json,application/json"></label>
+    <form data-f="importar"><label>…o pega aquí el texto<textarea name="texto" rows="4"></textarea></label><button class="btn peque">Importar</button></form></section>
+    <section class="card form"><h3>Almacenamiento</h3><p class="meta" id="almacen"></p>${P.plataforma === 'ios' ? '' : '<button class="btn peque gris" data-a="persistir">Proteger datos del navegador</button>'}
+    <button class="btn peque peligro" data-a="borrarTodo">Borrar todos los datos</button></section>`;
+}
+
+// ---------- router ----------
+const RUTAS = {
+  hoy: vHoy, planning: vPlanning, sesion: vSesion, objetivos: vObjetivos, objetivo: vObjetivo, programa: vPrograma,
+  repaso: vRepaso, formacion: vFormacion, prompt: vPrompt, ajustes: vAjustes,
+};
+function ruta() { const [n, a] = (location.hash.slice(1) || 'hoy').split('/'); return [n, a]; }
+function render(keepScroll) {
+  const y = window.scrollY; const [n, a] = ruta();
+  const f = RUTAS[n] || vHoy;
+  $('#vista').innerHTML = f(a);
+  const nav = Object.keys(NAV).filter(k => P.modulos.includes(k));
+  const pend = P.modulos.includes('repaso') ? tarjetasPendientes().length : 0;
+  $('#nav').innerHTML = nav.map(k => `<a href="#${k}" class="${(n === k || (n === 'sesion' && k === 'planning') || ((n === 'objetivo' || n === 'programa') && k === 'objetivos') || (n === 'prompt' && k === 'formacion')) ? 'act' : ''}">${NAV[k][0]}${k === 'repaso' && pend ? `<b>${pend}</b>` : ''}<span>${NAV[k][1]}</span></a>`).join('') +
+    `<a href="#ajustes" class="${n === 'ajustes' ? 'act' : ''}">⚙️<span>Ajustes</span></a>`;
+  if (n === 'ajustes') {
+    const el = $('#almacen');
+    if (el && navigator.storage && navigator.storage.estimate) navigator.storage.estimate().then(e => { el.textContent = 'Usado: ' + Math.round(e.usage / 1024) + ' KB'; });
+  }
+  window.scrollTo(0, keepScroll ? y : 0);
+}
+window.addEventListener('hashchange', () => { repasoVer = false; render(false); });
+
+// ---------- acciones ----------
+function copiarTexto(t) {
+  if (navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(t).then(() => true, () => false);
+  const ta = document.createElement('textarea'); ta.value = t; document.body.appendChild(ta); ta.select();
+  let ok = false; try { ok = document.execCommand('copy'); } catch (e) {} ta.remove(); return Promise.resolve(ok);
+}
+function descargar() {
+  S.ultima_copia = new Date().toISOString(); guardar();
+  const b = new Blob([JSON.stringify(S)], { type: 'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(b);
+  a.download = 'familia_' + P.id + '_' + hoyIso() + '.json'; document.body.appendChild(a); a.click(); a.remove();
+}
+function importar(texto) {
+  let d; try { d = JSON.parse(texto); } catch (e) { return toast('El texto no es una copia válida'); }
+  if (!d || d.version !== 1 || !Array.isArray(d.objetivos)) return toast('No parece una copia de esta app');
+  if (d.perfil && d.perfil !== P.id && !confirm('Esta copia es de "' + d.perfil + '", no de ' + P.nombre + '. ¿Importar igualmente?')) return;
+  if ((S.objetivos.length || S.planning.length) && !confirm('Esto reemplaza lo que hay ahora en este móvil. ¿Seguir?')) return;
+  S = Object.assign(vacio(), d); guardar(); toast('Copia importada'); location.hash = '#hoy'; render(false);
+}
+function borrar(tipo, id) {
+  if (!confirm('¿Eliminar? No se puede deshacer.')) return false;
+  if (tipo === 'tarea') S.tareas = S.tareas.filter(t => t.id !== id);
+  else if (tipo === 'paso') S.programas.forEach(p => { p.pasos = p.pasos.filter(s => s.id !== id); });
+  else if (tipo === 'tarjeta') S.programas.forEach(p => { p.tarjetas = p.tarjetas.filter(c => c.id !== id); });
+  else if (tipo === 'ej') S.planning.forEach(p => { p.ejercicios = p.ejercicios.filter(x => x.id !== id); });
+  else if (tipo === 'prompt') { S.prompts = S.prompts.filter(x => x.id !== id); location.hash = '#formacion'; }
+  else if (tipo === 'sesion') { S.planning = S.planning.filter(p => p.id !== id); S.excepciones = S.excepciones.filter(x => x.planning_id !== id); location.hash = '#planning'; }
+  else if (tipo === 'programa') { const p = programa(id); S.programas = S.programas.filter(x => x.id !== id); location.hash = '#objetivo/' + (p ? p.objetivo_id : ''); }
+  else if (tipo === 'objetivo') {
+    S.objetivos = S.objetivos.filter(o => o.id !== id); S.tareas = S.tareas.filter(t => t.objetivo_id !== id);
+    S.programas = S.programas.filter(p => p.objetivo_id !== id); S.planning.forEach(p => { if (p.objetivo_id === id) p.objetivo_id = null; });
+    location.hash = '#objetivos';
+  }
+  return true;
+}
+const ACCIONES = {
+  toggleEj(d) { const k = d.id + '|' + hoyIso(); if (S.registros[k]) delete S.registros[k]; else S.registros[k] = 1; },
+  toggleTarea(d) { const t = S.tareas.find(x => x.id === num(d.id)); if (t) { t.completada = !t.completada; t.fecha_completado = t.completada ? hoyIso() : null; } },
+  togglePaso(d) { const r = pasoPorId(num(d.id)); if (r) { r.s.completado = !r.s.completado; r.s.fecha_completado = r.s.completado ? hoyIso() : null; } },
+  enHoy(d, el) { const p = programa(num(d.id)); if (p) p.en_hoy = el.checked; },
+  borrar(d) { return borrar(d.tipo, num(d.id)); },
+  editarTexto(d) {
+    const id = num(d.id); let obj, campo;
+    if (d.tipo === 'tarea') { obj = S.tareas.find(x => x.id === id); campo = 'texto'; }
+    else if (d.tipo === 'paso') { const r = pasoPorId(id); obj = r && r.s; campo = 'titulo'; }
+    else if (d.tipo === 'ej') { S.planning.forEach(p => p.ejercicios.forEach(x => { if (x.id === id) obj = x; })); campo = 'texto'; }
+    if (!obj) return false; const v = prompt('Editar', obj[campo]); if (v === null || !v.trim()) return false; obj[campo] = v.trim();
+  },
+  verRespuesta() { repasoVer = true; return 'sin-guardar'; },
+  responder(d) {
+    const r = tarjetaPorId(num(d.id)); if (!r) return; const ok = d.ok === '1';
+    r.c.caja = ok ? Math.min(r.c.caja + 1, 5) : 1; r.c.proxima = iso(sumaDias(new Date(), DIAS_CAJA[r.c.caja]));
+    if (ok) r.c.aciertos++; else r.c.fallos++; repasoVer = false;
+  },
+  copiar(d) { const x = S.prompts.find(p => p.id === num(d.id)); if (x) copiarTexto(x.texto).then(ok => toast(ok ? 'Copiado' : 'No se pudo copiar')); return 'sin-guardar'; },
+  exportar() { descargar(); toast('Copia descargada'); },
+  compartir() {
+    S.ultima_copia = new Date().toISOString(); guardar();
+    const nombre = 'familia_' + P.id + '_' + hoyIso() + '.json';
+    const f = new File([JSON.stringify(S)], nombre, { type: 'application/json' });
+    if (navigator.canShare && navigator.canShare({ files: [f] })) navigator.share({ files: [f], title: nombre }).catch(() => {});
+    else { descargar(); toast('Este navegador no puede compartir: copia descargada'); }
+    return 'sin-guardar';
+  },
+  copiarTexto() { S.ultima_copia = new Date().toISOString(); guardar(); copiarTexto(JSON.stringify(S)).then(ok => toast(ok ? 'Copia copiada: pégala donde quieras guardarla' : 'No se pudo copiar')); return 'sin-guardar'; },
+  persistir() { (navigator.storage && navigator.storage.persist ? navigator.storage.persist() : Promise.resolve(false)).then(ok => toast(ok ? 'Datos protegidos' : 'El navegador no lo permite')); return 'sin-guardar'; },
+  borrarTodo() { if (confirm('¿Borrar TODOS los datos de este móvil?') && confirm('Última confirmación: se pierden todos los datos.')) { S = vacio(); } else return false; },
+  abrirAnadir() { abrirAnadir(); return 'sin-guardar'; },
+  cerrarAnadir() { $('#anadir').hidden = true; return 'sin-guardar'; },
+};
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-a]'); if (!b || b.type === 'checkbox') return;
+  const f = ACCIONES[b.dataset.a]; if (!f) return;
+  const r = f(b.dataset, b);
+  if (r === false || r === 'sin-guardar') { if (r === 'sin-guardar') render(true); return; }
+  guardar(); render(true);
+});
+document.addEventListener('change', e => {
+  const b = e.target.closest('[data-a]');
+  if (b && b.type === 'checkbox') { const r = ACCIONES[b.dataset.a](b.dataset, b); if (r !== false) { guardar(); render(true); } }
+  if (e.target.id === 'archivo' && e.target.files[0]) { const fr = new FileReader(); fr.onload = () => importar(fr.result); fr.readAsText(e.target.files[0]); }
+});
+document.addEventListener('input', e => {
+  if (e.target.id !== 'buscar') return; const q = e.target.value.toLowerCase().trim();
+  document.querySelectorAll('.prompt').forEach(c => { c.hidden = q && !c.dataset.buscar.includes(q); });
+});
+
+// ---------- formularios ----------
+const val = (f, n) => (new FormData(f).get(n) || '').toString().trim();
+const FORMS = {
+  tarea(f, id) { S.tareas.push({ id: nid(), objetivo_id: num(id), texto: val(f, 'texto'), enlace: null, fecha: val(f, 'fecha') || null, completada: false, fecha_completado: null }); },
+  objetivo(f) { S.objetivos.push({ id: nid(), titulo: val(f, 'titulo'), descripcion: '', categoria: val(f, 'categoria'), fecha_objetivo: null }); },
+  objetivoEditar(f, id) { const o = objetivo(num(id)); o.titulo = val(f, 'titulo'); o.descripcion = val(f, 'descripcion'); o.categoria = val(f, 'categoria'); },
+  programa(f, id) { S.programas.push({ id: nid(), objetivo_id: num(id), titulo: val(f, 'titulo'), en_hoy: true, pasos: [], tarjetas: [] }); },
+  paso(f, id) { programa(num(id)).pasos.push({ id: nid(), titulo: val(f, 'titulo'), enlace: val(f, 'enlace') || null, completado: false, fecha_completado: null }); },
+  tarjeta(f, id) { programa(num(id)).tarjetas.push({ id: nid(), pregunta: val(f, 'pregunta'), respuesta: val(f, 'respuesta'), caja: 1, proxima: hoyIso(), aciertos: 0, fallos: 0 }); },
+  ejercicio(f, id) { sesion(num(id)).ejercicios.push({ id: nid(), texto: val(f, 'texto'), enlace: null, duracion_seg: null }); },
+  sesion(f, id) {
+    const d = { titulo: val(f, 'titulo'), dia: num(val(f, 'dia')), hora: val(f, 'hora'), duracion_min: num(val(f, 'duracion_min')) || null,
+                categoria: val(f, 'categoria'), objetivo_id: num(val(f, 'objetivo_id')) || null, detalle: val(f, 'detalle'), enlace: val(f, 'enlace') || null };
+    if (num(id)) Object.assign(sesion(num(id)), d); else { S.planning.push(Object.assign({ id: nid(), ejercicios: [] }, d)); }
+    location.hash = '#planning'; toast('Guardado'); return 'ir';
+  },
+  puntual(f, id, ev) {
+    const pid = num(id); const fn = f.dataset.fn; const op = ev.submitter && ev.submitter.value;
+    S.excepciones = S.excepciones.filter(x => !(x.planning_id === pid && x.fecha_original === fn));
+    if (op === 'cancelar') S.excepciones.push({ planning_id: pid, fecha_original: fn, cancelada: true, nueva_fecha: null, nueva_hora: null, nota: '' });
+    else if (op === 'mover') {
+      const h = val(f, 'nueva_hora'), d = val(f, 'nueva_fecha');
+      if (h || d) S.excepciones.push({ planning_id: pid, fecha_original: fn, cancelada: false, nueva_fecha: d || null, nueva_hora: h || null, nota: '' });
+    }
+    toast('Hecho');
+  },
+  prompt(f, id) {
+    const d = { titulo: val(f, 'titulo'), herramienta: val(f, 'herramienta'), texto: val(f, 'texto'), etiquetas: val(f, 'etiquetas'), nota: val(f, 'nota') };
+    if (num(id)) Object.assign(S.prompts.find(p => p.id === num(id)), d); else S.prompts.push(Object.assign({ id: nid() }, d));
+    location.hash = '#formacion'; toast('Guardado'); return 'ir';
+  },
+  importar(f) { importar(val(f, 'texto')); return 'sin-guardar'; },
+  anadir(f) {
+    let oid = num(val(f, 'objetivo_id'));
+    if (!oid) { let o = S.objetivos.find(x => x.titulo === 'Tareas sueltas'); if (!o) { o = { id: nid(), titulo: 'Tareas sueltas', descripcion: '', categoria: 'general', fecha_objetivo: null }; S.objetivos.push(o); } oid = o.id; }
+    const w = val(f, 'cuando'); const fecha = w === 'hoy' ? hoyIso() : w === 'manana' ? iso(sumaDias(new Date(), 1)) : null;
+    S.tareas.push({ id: nid(), objetivo_id: oid, texto: val(f, 'texto'), enlace: null, fecha, completada: false, fecha_completado: null });
+    $('#anadir').hidden = true; f.reset(); toast('Añadido');
+  },
+};
+document.addEventListener('submit', e => {
+  const f = e.target.closest('form[data-f]'); if (!f) return; e.preventDefault();
+  const fn = FORMS[f.dataset.f]; if (!fn) return; const r = fn(f, f.dataset.id, e);
+  if (r === 'sin-guardar') return; guardar(); render(r !== 'ir');
+});
+function abrirAnadir() {
+  const f = $('#formAnadir');
+  f.querySelector('[name=objetivo_id]').innerHTML = '<option value="">Tareas sueltas</option>' + opts(S.objetivos.filter(o => o.titulo !== 'Tareas sueltas').map(o => [o.id, o.titulo]), '');
+  $('#anadir').hidden = false; f.querySelector('[name=texto]').focus();
+}
+
+// ---------- arranque ----------
+document.title = P.nombre + ' · Mi día';
+document.documentElement.style.setProperty('--acento', P.color);
+if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+render(false);
+})();
+
+</script>
+</body>
+</html>
