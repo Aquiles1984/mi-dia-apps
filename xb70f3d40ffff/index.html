@@ -38,6 +38,10 @@ h1{font-size:1.5rem;margin:.4em 0 .2em}h2{font-size:1.05rem;margin:1.3em 0 .5em;
 .sesion{display:flex;gap:10px;align-items:center}.tit{color:var(--texto);font-weight:600}
 .chip{font-size:.72rem;background:rgba(255,255,255,.1);border-radius:99px;padding:2px 9px;color:var(--suave)}.chip.rojo{background:rgba(248,113,113,.2);color:var(--rojo)}
 .enlace{font-size:1.1rem}
+button.chip{border:0;font:inherit;font-size:.78rem;color:var(--texto)}
+.subnav{margin:8px 0}.subnav a.chip{font-size:.85rem;padding:6px 14px}.chip.act{background:var(--acento);color:#fff}
+.grafico{width:100%;height:auto;margin:8px 0}
+.menu-tabla{width:100%;border-collapse:collapse;font-size:.88rem}.menu-tabla td{padding:7px 4px;border-top:1px solid var(--borde);vertical-align:top}.menu-tabla td:first-child{font-weight:700;color:var(--acento);white-space:nowrap}
 .fila{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.centrar{justify-content:center;margin-top:14px}
 .dos{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .form label{display:block;font-size:.85rem;color:var(--suave);margin:8px 0}
@@ -79,7 +83,7 @@ pre.texto{white-space:pre-wrap;word-break:break-word;font:inherit;background:rgb
   </form>
 </div>
 <div id="toast" class="toast" hidden></div>
-<script>window.PERFIL = {"id": "isabel", "nombre": "Isabel", "corto": "Isabel", "color": "#fbbf24", "modulos": ["hoy", "planning", "objetivos"], "plataforma": "android"};</script>
+<script>window.PERFIL = {"id": "isabel", "nombre": "Isabel", "corto": "Isabel", "color": "#fbbf24", "modulos": ["hoy", "planning", "objetivos", "compras", "menus"], "plataforma": "android"}; window.FAM_MODS = [];</script>
 <script>
 (function () {
 'use strict';
@@ -97,14 +101,16 @@ const NAV = {
 
 // ---------- estado ----------
 function vacio() {
-  return { version: 1, perfil: P.id, sig: 1, ultima_copia: null, objetivos: [], tareas: [], programas: [],
-           planning: [], excepciones: [], registros: {}, prompts: [], notas: [] };
+  const base = { version: 1, perfil: P.id, sig: 1, ultima_copia: null, objetivos: [], tareas: [], programas: [],
+                 planning: [], excepciones: [], registros: {}, prompts: [], notas: [] };
+  (window.FAM_MODS || []).forEach(m => Object.assign(base, JSON.parse(JSON.stringify(m.defaults || {}))));
+  return base;
 }
 function cargar() {
   try { const t = localStorage.getItem(KEY); if (t) return Object.assign(vacio(), JSON.parse(t)); } catch (e) {}
   return vacio();
 }
-let S = cargar();
+let S = vacio();
 function guardar() {
   try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { toast('No se pudo guardar en este navegador'); }
 }
@@ -184,6 +190,7 @@ function vHoy() {
   if (vacioTodo) h += `<a class="aviso" href="#ajustes">📥 <strong>Aún no tienes datos.</strong> Importa tu copia en Ajustes.</a>`;
   else if (dias === null || dias >= 7) h += `<a class="aviso" href="#ajustes">💾 <strong>${dias === null ? 'Aún no has hecho copia de seguridad' : 'Última copia hace ' + dias + ' días'}.</strong> Hazla en Ajustes.</a>`;
   if (nTarj && P.modulos.includes('repaso')) h += `<a class="aviso" href="#repaso">🧠 <strong>${nTarj} tarjeta(s) de repaso</strong></a>`;
+  h += (window.FAM_MODS || []).map(m => (m.hoy ? m.hoy() : '')).join('');
   if (sesiones.length) {
     h += '<h2>🕒 Con hora</h2>';
     sesiones.forEach(e => {
@@ -373,14 +380,15 @@ const RUTAS = {
   hoy: vHoy, planning: vPlanning, sesion: vSesion, objetivos: vObjetivos, objetivo: vObjetivo, programa: vPrograma,
   repaso: vRepaso, formacion: vFormacion, prompt: vPrompt, ajustes: vAjustes,
 };
-function ruta() { const [n, a] = (location.hash.slice(1) || 'hoy').split('/'); return [n, a]; }
+const NAV_DE = { sesion: 'planning', objetivo: 'objetivos', programa: 'objetivos', prompt: 'formacion' };
+function ruta() { const [n, a, b] = (location.hash.slice(1) || 'hoy').split('/'); return [n, a, b]; }
 function render(keepScroll) {
-  const y = window.scrollY; const [n, a] = ruta();
+  const y = window.scrollY; const [n, a, b] = ruta();
   const f = RUTAS[n] || vHoy;
-  $('#vista').innerHTML = f(a);
+  $('#vista').innerHTML = f(a, b);
   const nav = Object.keys(NAV).filter(k => P.modulos.includes(k));
   const pend = P.modulos.includes('repaso') ? tarjetasPendientes().length : 0;
-  $('#nav').innerHTML = nav.map(k => `<a href="#${k}" class="${(n === k || (n === 'sesion' && k === 'planning') || ((n === 'objetivo' || n === 'programa') && k === 'objetivos') || (n === 'prompt' && k === 'formacion')) ? 'act' : ''}">${NAV[k][0]}${k === 'repaso' && pend ? `<b>${pend}</b>` : ''}<span>${NAV[k][1]}</span></a>`).join('') +
+  $('#nav').innerHTML = nav.map(k => `<a href="#${k}" class="${(n === k || NAV_DE[n] === k) ? 'act' : ''}">${NAV[k][0]}${k === 'repaso' && pend ? `<b>${pend}</b>` : ''}<span>${NAV[k][1]}</span></a>`).join('') +
     `<a href="#ajustes" class="${n === 'ajustes' ? 'act' : ''}">⚙️<span>Ajustes</span></a>`;
   if (n === 'ajustes') {
     const el = $('#almacen');
@@ -528,16 +536,303 @@ function abrirAnadir() {
   $('#anadir').hidden = false; f.querySelector('[name=texto]').focus();
 }
 
-// ---------- arranque ----------
-document.title = P.nombre + ' · Mi día';
-document.documentElement.style.setProperty('--acento', P.color);
-if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
-if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
-  navigator.serviceWorker.register('sw.js').catch(() => {});
-}
-render(false);
+// ---------- API para módulos y arranque ----------
+window.FAM = {
+  get S() { return S; }, P, nid, esc, opts, iso, hoyIso, sumaDias, fechaCorta, fechaDe, idxDia, toast, num, val, guardar, render,
+  enlaceHtml, objetivo, DIAS, copiarTexto,
+  iniciar() {
+    (window.FAM_MODS || []).forEach(m => {
+      Object.assign(RUTAS, m.rutas || {}); Object.assign(ACCIONES, m.acciones || {});
+      Object.assign(FORMS, m.forms || {}); Object.assign(NAV, m.nav || {}); Object.assign(NAV_DE, m.navDe || {});
+    });
+    S = cargar();
+    document.title = P.nombre + ' · Mi día';
+    document.documentElement.style.setProperty('--acento', P.color);
+    if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+    if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    }
+    render(false);
+  },
+};
 })();
 
 </script>
+<script>
+(function () {
+'use strict';
+const F = window.FAM;
+const { esc, opts, hoyIso, fechaCorta, nid, num, val, toast } = F;
+const S = () => F.S;
+const UNI = { kg: '€/kg', l: '€/l', ud: '€/ud' };
+const CATEGORIAS = ['Alimentación', 'Bebidas', 'Limpieza', 'Higiene', 'Otros'];
+const eur = n => (Math.round(n * 100) / 100).toFixed(2).replace('.', ',') + ' €';
+const dec = v => { const n = parseFloat(String(v).replace(',', '.').trim()); return isNaN(n) ? null : n; };
+const norm = s => String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim();
+
+// ---------- datos ----------
+const producto = id => S().productos.find(p => p.id === id);
+const tienda = id => S().tiendas.find(t => t.id === id);
+const activas = () => S().tiendas.filter(t => t.activa !== false);
+function obtenerOCrear(nombre, unidad) {
+  const n = norm(nombre); let p = S().productos.find(x => norm(x.nombre) === n);
+  if (!p) { p = { id: nid(), nombre: nombre.trim(), categoria: 'Otros', unidad: unidad || 'ud', precio_objetivo: null }; S().productos.push(p); }
+  return p;
+}
+const unitario = r => r.precio / (r.cantidad || 1);
+function ultimos() {
+  const m = {};
+  S().precios.slice().sort((a, b) => (a.fecha + String(a.id).padStart(8, '0')).localeCompare(b.fecha + String(b.id).padStart(8, '0')))
+    .forEach(r => { m[r.producto_id + '|' + r.tienda_id] = r; });
+  return m;
+}
+function preciosDe(u) {
+  const act = new Set(activas().map(t => t.id)); const d = {};
+  Object.values(u).forEach(r => { if (act.has(r.tienda_id)) (d[r.producto_id] = d[r.producto_id] || {})[r.tienda_id] = unitario(r); });
+  return d;
+}
+function mejor(pid) {
+  let b = null; Object.values(ultimos()).forEach(r => { if (r.producto_id === pid && (!b || unitario(r) < unitario(b))) b = r; });
+  return b;
+}
+function simular(items) {
+  const d = preciosDe(ultimos()); const act = activas();
+  const con = items.filter(i => d[i.pid]); const sin = items.filter(i => !d[i.pid]);
+  const porTienda = [];
+  act.forEach(t => {
+    const cub = con.filter(i => d[i.pid][t.id] !== undefined);
+    if (cub.length) porTienda.push({ tienda: t.nombre, cubiertos: cub.length, total: cub.reduce((s, i) => s + i.cant * d[i.pid][t.id], 0) });
+  });
+  porTienda.sort((a, b) => b.cubiertos - a.cubiertos || a.total - b.total);
+  let optimo = 0, peor = 0;
+  con.forEach(i => { const v = Object.values(d[i.pid]); optimo += i.cant * Math.min(...v); peor += i.cant * Math.max(...v); });
+  let pareja = null;
+  const ids = act.filter(t => porTienda.some(x => x.tienda === t.nombre));
+  for (let i = 0; i < ids.length; i++) for (let j = i + 1; j < ids.length; j++) {
+    let total = 0, cub = 0;
+    con.forEach(it => { const o = [ids[i].id, ids[j].id].filter(t => d[it.pid][t] !== undefined).map(t => d[it.pid][t]); if (o.length) { cub++; total += it.cant * Math.min(...o); } });
+    if (!pareja || cub > pareja.cub || (cub === pareja.cub && total < pareja.total)) pareja = { a: ids[i].nombre, b: ids[j].nombre, cub, total };
+  }
+  return { porTienda, sin: sin.length, optimo, peor, ahorro: peor - optimo, pareja, conPrecio: con.length };
+}
+function alertas() {
+  const por = {}; S().precios.slice().sort((a, b) => (a.fecha + a.id).toString().localeCompare((b.fecha + b.id).toString()))
+    .forEach(r => { (por[r.producto_id] = por[r.producto_id] || []).push(r); });
+  const out = [];
+  Object.keys(por).forEach(k => {
+    const f = por[k]; if (f.length < 2) return; const ult = f[f.length - 1]; const ant = f.slice(0, -1);
+    const media = ant.reduce((s, r) => s + unitario(r), 0) / ant.length; const p = producto(ult.producto_id);
+    if (p && media && (unitario(ult) - media) / media > 0.10) out.push({ p, ult, media, subida: Math.round(100 * (unitario(ult) - media) / media) });
+  });
+  return out;
+}
+const pendientes = () => S().lista.filter(l => !l.hecho);
+
+// ---------- vistas ----------
+function sub(actual) {
+  const t = [['', 'Lista'], ['productos', 'Productos'], ['tiendas', 'Tiendas'], ['ahorro', 'Ahorro']];
+  return '<div class="fila subnav">' + t.map(([k, n]) => `<a class="chip${(actual || '') === k ? ' act' : ''}" href="#compras${k ? '/' + k : ''}">${n}</a>`).join('') + '</div>';
+}
+function formPrecio(pid) {
+  const p = pid ? producto(pid) : null;
+  return `<form class="form" data-f="precio" data-id="${pid || ''}">
+    ${p ? '' : `<label>Producto<input name="producto" list="dl-prod" required autocomplete="off"></label>`}
+    <div class="dos"><label>Tienda<select name="tienda_id">${opts(activas().map(t => [t.id, t.nombre]), '')}</select></label>
+    <label>Precio (€)<input name="precio" inputmode="decimal" required></label></div>
+    <div class="dos"><label>Cantidad del formato (${p ? esc(p.unidad) : 'kg / l / ud'})<input name="cantidad" inputmode="decimal" value="1"></label>
+    ${p ? '' : `<label>Unidad<select name="unidad">${opts([['kg', 'kg'], ['l', 'litros'], ['ud', 'unidades']], 'ud')}</select></label>`}</div>
+    <label class="interruptor"><input type="checkbox" name="oferta"> En oferta</label>
+    <button class="btn peque">Apuntar precio</button></form>`;
+}
+function vLista() {
+  const s = S(); const lista = s.lista.slice().sort((a, b) => a.hecho - b.hecho || ((producto(a.producto_id) || { nombre: '' }).nombre).localeCompare((producto(b.producto_id) || { nombre: '' }).nombre));
+  const pend = pendientes(); const hechos = s.lista.filter(l => l.hecho);
+  let h = '<h1>🛒 Compras</h1>' + sub('');
+  h += `<datalist id="dl-prod">${s.productos.map(p => `<option value="${esc(p.nombre)}">`).join('')}</datalist>
+    <form class="card form fila" data-f="listaAnadir"><input class="grow" name="producto" list="dl-prod" placeholder="Añadir a la lista…" required autocomplete="off"><input name="cantidad" class="fecha" inputmode="decimal" value="1" style="max-width:70px"><button class="btn peque">＋</button></form>`;
+  h += '<ul class="lista card">' + (lista.map(l => {
+    const p = producto(l.producto_id); if (!p) return ''; const b = mejor(p.id);
+    return `<li class="${l.hecho ? 'hecho' : ''}"><button class="check" data-a="listaMarcar" data-id="${l.id}">${l.hecho ? '☑' : '☐'}</button><span class="grow">${esc(p.nombre)}${b ? `<br><span class="meta">mejor: ${esc((tienda(b.tienda_id) || {}).nombre || '?')} ${eur(unitario(b))} ${UNI[p.unidad]}</span>` : ''}</span>
+      <button class="chip" data-a="listaCantidad" data-id="${l.id}">${l.cantidad} ${esc(p.unidad)}</button><button class="mini" data-a="listaQuitar" data-id="${l.id}">🗑️</button></li>`;
+  }).join('') || '<li class="meta">Lista vacía.</li>') + '</ul>';
+  if (pend.length) {
+    const sim = simular(pend.map(l => ({ pid: l.producto_id, cant: l.cantidad })));
+    h += '<h2>💶 Simulador</h2><section class="card">';
+    if (!sim.porTienda.length) h += '<p class="meta">Apunta precios de estos productos para que la app te diga dónde sale más barata la compra.</p>';
+    else {
+      h += '<ul class="lista">' + sim.porTienda.slice(0, 3).map((t, i) => `<li><span class="grow">${i === 0 ? '🥇 ' : ''}${esc(t.tienda)}</span><span class="meta">${t.cubiertos} de ${pend.length} con precio</span><strong>${eur(t.total)}</strong></li>`).join('') + '</ul>';
+      if (sim.pareja) h += `<p class="meta">Mejor combinación de 2 tiendas: <strong>${esc(sim.pareja.a)} + ${esc(sim.pareja.b)}</strong> → ${eur(sim.pareja.total)} (${sim.pareja.cub} de ${pend.length}).</p>`;
+      if (sim.ahorro > 0.005) h += `<p class="meta">Comprando cada cosa donde es más barata ahorras hasta ${eur(sim.ahorro)} frente al precio más caro.</p>`;
+      if (sim.sin) h += `<p class="meta">${sim.sin} producto(s) sin precio todavía.</p>`;
+    }
+    h += '</section>';
+  }
+  if (hechos.length) {
+    h += `<h2>✅ Cerrar compra</h2><form class="card form" data-f="cerrar"><p class="meta">${hechos.length} producto(s) marcados.</p>
+      <div class="dos"><label>Tienda<select name="tienda_id">${opts([['', 'Sin tienda']].concat(activas().map(t => [t.id, t.nombre])), '')}</select></label>
+      <label>Total del ticket (€)<input name="total" inputmode="decimal" required></label></div><button class="btn peque">Guardar ticket</button></form>`;
+  }
+  const al = alertas();
+  if (al.length) h += '<h2>📈 Han subido</h2><ul class="lista card">' + al.map(a => `<li><a class="grow" href="#compras/producto/${a.p.id}">${esc(a.p.nombre)}</a><span class="chip rojo">+${a.subida}%</span><span class="meta">${eur(unitario(a.ult))} frente a ${eur(a.media)} de media</span></li>`).join('') + '</ul>';
+  h += `<details class="card"><summary>🏷️ Apuntar un precio</summary>${formPrecio(null)}</details>`;
+  return h;
+}
+function grafico(hist) {
+  if (hist.length < 2) return '';
+  const v = hist.map(unitario); const mn = Math.min(...v), mx = Math.max(...v), rg = (mx - mn) || 1, W = 520, H = 140, M = 10, paso = (W - 2 * M) / (v.length - 1);
+  const pts = v.map((x, i) => (M + i * paso).toFixed(1) + ',' + (H - M - (x - mn) / rg * (H - 2 * M)).toFixed(1)).join(' ');
+  return `<svg viewBox="0 0 ${W} ${H}" class="grafico"><polyline fill="none" stroke="var(--acento)" stroke-width="3" points="${pts}"/></svg>`;
+}
+function vProductos() {
+  const s = S(); let h = '<h1>🛒 Productos</h1>' + sub('productos') + '<input id="buscar" class="buscar" type="search" placeholder="Buscar producto…">';
+  const por = {}; s.productos.slice().sort((a, b) => a.nombre.localeCompare(b.nombre)).forEach(p => { (por[p.categoria] = por[p.categoria] || []).push(p); });
+  Object.keys(por).sort().forEach(c => {
+    h += `<h2>${esc(c)}</h2><ul class="lista card">` + por[c].map(p => {
+      const b = mejor(p.id);
+      return `<li class="prompt" data-buscar="${esc(norm(p.nombre))}"><a class="grow" href="#compras/producto/${p.id}">${esc(p.nombre)}</a><span class="meta">${b ? esc((tienda(b.tienda_id) || {}).nombre || '') + ' ' + eur(unitario(b)) + ' ' + UNI[p.unidad] : 'sin precio'}</span></li>`;
+    }).join('') + '</ul>';
+  });
+  return h + `<details class="card"><summary>＋ Nuevo producto</summary><form class="form" data-f="productoNuevo"><label>Nombre<input name="nombre" required></label>
+    <div class="dos"><label>Categoría<select name="categoria">${opts(CATEGORIAS.map(c => [c, c]), 'Otros')}</select></label><label>Se compara en<select name="unidad">${opts([['kg', '€/kg'], ['l', '€/l'], ['ud', '€/ud']], 'ud')}</select></label></div><button class="btn peque">Crear</button></form></details>`;
+}
+function vProducto(id) {
+  const p = producto(parseInt(id, 10)); if (!p) return '<p class="vacio">Producto no encontrado.</p>' + sub('productos');
+  const hist = S().precios.filter(r => r.producto_id === p.id).sort((a, b) => (a.fecha + String(a.id).padStart(8, '0')).localeCompare(b.fecha + String(b.id).padStart(8, '0')));
+  let h = `<a class="volver" href="#compras/productos">← Productos</a><h1>${esc(p.nombre)}</h1><p class="meta">${esc(p.categoria)} · se compara en ${UNI[p.unidad]}</p>
+    <div class="fila"><button class="btn peque" data-a="listaDesdeProducto" data-id="${p.id}">＋ A la lista</button></div>`;
+  h += grafico(hist);
+  h += '<h2>Precios vistos</h2><ul class="lista card">' + (hist.slice().reverse().map(r => `<li><span class="meta">${fechaCorta(r.fecha)}</span><span class="grow">${esc((tienda(r.tienda_id) || {}).nombre || '?')}${r.oferta ? ' 🏷️' : ''}<br><span class="meta">${eur(r.precio)} por ${r.cantidad} ${esc(p.unidad)}</span></span><strong>${eur(unitario(r))}</strong><button class="mini" data-a="precioEliminar" data-id="${r.id}">🗑️</button></li>`).join('') || '<li class="meta">Aún no hay precios.</li>') + '</ul>';
+  h += `<details class="card" open><summary>🏷️ Apuntar un precio</summary>${formPrecio(p.id)}</details>`;
+  h += `<details class="card"><summary>✏️ Editar producto</summary><form class="form" data-f="productoEditar" data-id="${p.id}"><label>Nombre<input name="nombre" value="${esc(p.nombre)}" required></label>
+    <div class="dos"><label>Categoría<select name="categoria">${opts(CATEGORIAS.map(c => [c, c]), p.categoria)}</select></label><label>Se compara en<select name="unidad">${opts([['kg', '€/kg'], ['l', '€/l'], ['ud', '€/ud']], p.unidad)}</select></label></div>
+    <label>Precio objetivo (${UNI[p.unidad]})<input name="objetivo" inputmode="decimal" value="${p.precio_objetivo == null ? '' : String(p.precio_objetivo).replace('.', ',')}"></label><button class="btn peque">Guardar</button></form></details>
+    <button class="btn peligro" data-a="productoEliminar" data-id="${p.id}">Eliminar producto</button>`;
+  return h;
+}
+function vTiendas() {
+  return '<h1>🛒 Tiendas</h1>' + sub('tiendas') + '<ul class="lista card">' + S().tiendas.map(t => `<li><label class="grow"><input type="checkbox" data-a="tiendaActiva" data-id="${t.id}" ${t.activa !== false ? 'checked' : ''}> ${esc(t.nombre)}</label><span class="meta">${esc(t.tipo || '')}</span></li>`).join('') + '</ul>' +
+    `<details class="card"><summary>＋ Nueva tienda</summary><form class="form" data-f="tiendaNueva"><label>Nombre<input name="nombre" required></label><label>Tipo<input name="tipo" placeholder="supermercado, ropa…"></label><button class="btn peque">Añadir</button></form></details>`;
+}
+function vAhorro() {
+  const t = S().tickets; const meses = {}, tiendas = {};
+  t.forEach(k => { const m = (k.fecha || '').slice(0, 7); (meses[m] = meses[m] || { n: 0, g: 0, a: 0 }); meses[m].n++; meses[m].g += k.total; meses[m].a += k.ahorro || 0;
+    const nom = (tienda(k.tienda_id) || {}).nombre || 'Sin tienda'; (tiendas[nom] = tiendas[nom] || { n: 0, g: 0 }); tiendas[nom].n++; tiendas[nom].g += k.total; });
+  let h = '<h1>🛒 Ahorro</h1>' + sub('ahorro');
+  if (!t.length) return h + '<p class="vacio">Cuando cierres una compra con su ticket aparecerá aquí el gasto y el ahorro estimado.</p>';
+  h += '<h2>Por mes</h2><ul class="lista card">' + Object.keys(meses).sort().reverse().map(m => `<li><span class="grow">${m}</span><span class="meta">${meses[m].n} compra(s) · gasto ${eur(meses[m].g)}</span><strong>ahorro ${eur(meses[m].a)}</strong></li>`).join('') + '</ul>';
+  h += '<h2>Por tienda</h2><ul class="lista card">' + Object.keys(tiendas).sort((a, b) => tiendas[b].g - tiendas[a].g).map(n => `<li><span class="grow">${esc(n)}</span><span class="meta">${tiendas[n].n} compra(s)</span><strong>${eur(tiendas[n].g)}</strong></li>`).join('') + '</ul>';
+  return h + '<h2>Últimas compras</h2><ul class="lista card">' + t.slice().sort((a, b) => (b.fecha + b.id).toString().localeCompare((a.fecha + a.id).toString())).slice(0, 20).map(k => `<li><span class="meta">${fechaCorta(k.fecha)}</span><span class="grow">${esc((tienda(k.tienda_id) || {}).nombre || 'Sin tienda')}</span><strong>${eur(k.total)}</strong></li>`).join('') + '</ul>';
+}
+function vCompras(a, b) {
+  if (a === 'productos') return vProductos();
+  if (a === 'producto') return vProducto(b);
+  if (a === 'tiendas') return vTiendas();
+  if (a === 'ahorro') return vAhorro();
+  return vLista();
+}
+
+// ---------- acciones y formularios ----------
+function anadirALista(pid, cant) {
+  const l = S().lista.find(x => x.producto_id === pid && !x.hecho);
+  if (l) l.cantidad += cant; else S().lista.push({ id: nid(), producto_id: pid, cantidad: cant, hecho: false });
+}
+window.FAM_MODS.push({
+  defaults: { tiendas: [], productos: [], precios: [], lista: [], tickets: [] },
+  nav: { compras: ['🛒', 'Compras'] },
+  navDe: {},
+  rutas: { compras: vCompras },
+  hoy() {
+    const p = pendientes(); if (!p.length) return '';
+    const sim = simular(p.map(l => ({ pid: l.producto_id, cant: l.cantidad })));
+    const t = sim.porTienda[0];
+    return `<a class="aviso" href="#compras">🛒 <strong>Lista de la compra: ${p.length} cosa(s)</strong>${t ? ` <span class="meta">· más completa y barata: ${esc(t.tienda)} (${eur(t.total)}${t.cubiertos < p.length ? ', ' + t.cubiertos + ' de ' + p.length + ' con precio' : ''})</span>` : ' <span class="meta">· apunta precios para comparar tiendas</span>'}</a>`;
+  },
+  acciones: {
+    listaMarcar(d) { const l = S().lista.find(x => x.id === num(d.id)); if (l) l.hecho = !l.hecho; },
+    listaQuitar(d) { S().lista = S().lista.filter(x => x.id !== num(d.id)); },
+    listaCantidad(d) { const l = S().lista.find(x => x.id === num(d.id)); if (!l) return false; const v = dec(prompt('Cantidad', l.cantidad)); if (v === null || v <= 0) return false; l.cantidad = v; },
+    listaDesdeProducto(d) { anadirALista(num(d.id), 1); toast('Añadido a la lista'); },
+    precioEliminar(d) { if (!confirm('¿Eliminar este precio?')) return false; S().precios = S().precios.filter(r => r.id !== num(d.id)); },
+    productoEliminar(d) {
+      if (!confirm('¿Eliminar el producto con sus precios?')) return false; const id = num(d.id);
+      const s = S(); s.productos = s.productos.filter(p => p.id !== id); s.precios = s.precios.filter(r => r.producto_id !== id); s.lista = s.lista.filter(l => l.producto_id !== id);
+      location.hash = '#compras/productos';
+    },
+    tiendaActiva(d, el) { const t = tienda(num(d.id)); if (t) t.activa = el.checked; },
+  },
+  forms: {
+    listaAnadir(f) { const n = val(f, 'producto'); if (!n) return; anadirALista(obtenerOCrear(n).id, dec(val(f, 'cantidad')) || 1); },
+    precio(f, id, ev) {
+      const precio = dec(val(f, 'precio')); if (precio === null || precio <= 0) { toast('Precio no válido'); return 'sin-guardar'; }
+      const p = id ? producto(num(id)) : obtenerOCrear(val(f, 'producto'), val(f, 'unidad'));
+      const cant = dec(val(f, 'cantidad')) || 1;
+      S().precios.push({ id: nid(), producto_id: p.id, tienda_id: num(val(f, 'tienda_id')), precio, cantidad: cant, oferta: !!f.querySelector('[name=oferta]').checked, nota: '', fecha: hoyIso() });
+      toast(p.nombre + ': ' + eur(precio / cant) + ' ' + UNI[p.unidad]);
+    },
+    cerrar(f) {
+      const total = dec(val(f, 'total')); if (total === null || total < 0) { toast('Total no válido'); return 'sin-guardar'; }
+      const tid = num(val(f, 'tienda_id')) || null; const d = preciosDe(ultimos()); let ahorro = 0;
+      S().lista.filter(l => l.hecho).forEach(l => { const pr = d[l.producto_id]; if (pr && tid && pr[tid] !== undefined) ahorro += l.cantidad * (Math.max(...Object.values(pr)) - pr[tid]); });
+      S().tickets.push({ id: nid(), fecha: hoyIso(), tienda_id: tid, total, ahorro: Math.round(ahorro * 100) / 100, nota: '' });
+      S().lista = S().lista.filter(l => !l.hecho); toast('Ticket guardado. Ahorro estimado: ' + eur(ahorro));
+    },
+    productoNuevo(f) { const n = val(f, 'nombre'); const p = obtenerOCrear(n, val(f, 'unidad')); p.categoria = val(f, 'categoria'); p.unidad = val(f, 'unidad'); },
+    productoEditar(f, id) { const p = producto(num(id)); p.nombre = val(f, 'nombre'); p.categoria = val(f, 'categoria'); p.unidad = val(f, 'unidad'); p.precio_objetivo = dec(val(f, 'objetivo')); toast('Guardado'); },
+    tiendaNueva(f) { S().tiendas.push({ id: nid(), nombre: val(f, 'nombre'), tipo: val(f, 'tipo'), web: '', activa: true }); },
+  },
+});
+})();
+
+</script>
+<script>
+(function () {
+'use strict';
+const F = window.FAM;
+const { esc, nid, num, val, toast, DIAS } = F;
+const S = () => F.S;
+const semana = id => S().menus.find(m => m.id === id);
+const vacioDias = () => DIAS.map((_, i) => ({ dia: i, comida: '', cena: '' }));
+
+function vMenus(a, b) {
+  if (a === 'editar') return vEditar(num(b));
+  const ms = S().menus.slice().sort((x, y) => x.numero - y.numero);
+  let h = '<h1>🍽️ Menús</h1>';
+  if (!ms.length) h += '<p class="vacio">Aún no hay menús semanales.</p>';
+  ms.forEach(m => {
+    h += `<article class="card"><header class="fila"><h3 class="grow">Semana ${m.numero}</h3><a class="btn peque gris" href="#menus/editar/${m.id}">✏️ Editar</a></header>
+      ${m.nota ? `<p class="meta">${esc(m.nota)}</p>` : ''}<table class="menu-tabla">` +
+      m.dias.slice().sort((x, y) => x.dia - y.dia).map(d => `<tr><td>${DIAS[d.dia].slice(0, 3)}</td><td>${d.comida ? '<strong>Comida:</strong> ' + esc(d.comida) : ''}${d.comida && d.cena ? '<br>' : ''}${d.cena ? '<strong>Cena:</strong> ' + esc(d.cena) : ''}</td></tr>`).join('') + '</table></article>';
+  });
+  return h + '<button class="btn" data-a="menuNuevo">＋ Nueva semana</button>';
+}
+function vEditar(id) {
+  const m = semana(id); if (!m) return '<p class="vacio">Semana no encontrada.</p>';
+  return `<a class="volver" href="#menus">← Menús</a><h1>Semana ${m.numero}</h1><form class="card form" data-f="menuEditar" data-id="${m.id}">
+    <label>Nota<textarea name="nota" rows="2">${esc(m.nota)}</textarea></label>` +
+    m.dias.slice().sort((x, y) => x.dia - y.dia).map(d => `<h3>${DIAS[d.dia]}</h3><label>Comida<textarea name="comida${d.dia}" rows="2">${esc(d.comida)}</textarea></label><label>Cena<textarea name="cena${d.dia}" rows="2">${esc(d.cena)}</textarea></label>`).join('') +
+    `<button class="btn">Guardar</button></form><button class="btn peligro" data-a="menuEliminar" data-id="${m.id}">Eliminar semana</button>`;
+}
+window.FAM_MODS.push({
+  defaults: { menus: [] },
+  nav: { menus: ['🍽️', 'Menús'] },
+  navDe: {},
+  rutas: { menus: vMenus },
+  acciones: {
+    menuNuevo() { const n = Math.max(0, ...S().menus.map(m => m.numero)) + 1; S().menus.push({ id: nid(), numero: n, nota: '', dias: vacioDias() }); toast('Semana ' + n + ' creada'); },
+    menuEliminar(d) { if (!confirm('¿Eliminar la semana?')) return false; S().menus = S().menus.filter(m => m.id !== num(d.id)); location.hash = '#menus'; },
+  },
+  forms: {
+    menuEditar(f, id) {
+      const m = semana(num(id)); m.nota = val(f, 'nota');
+      m.dias.forEach(d => { d.comida = val(f, 'comida' + d.dia); d.cena = val(f, 'cena' + d.dia); });
+      location.hash = '#menus'; toast('Guardado'); return 'ir';
+    },
+  },
+});
+})();
+
+</script>
+
+<script>FAM.iniciar();</script>
 </body>
 </html>

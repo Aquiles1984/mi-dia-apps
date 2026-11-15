@@ -38,6 +38,10 @@ h1{font-size:1.5rem;margin:.4em 0 .2em}h2{font-size:1.05rem;margin:1.3em 0 .5em;
 .sesion{display:flex;gap:10px;align-items:center}.tit{color:var(--texto);font-weight:600}
 .chip{font-size:.72rem;background:rgba(255,255,255,.1);border-radius:99px;padding:2px 9px;color:var(--suave)}.chip.rojo{background:rgba(248,113,113,.2);color:var(--rojo)}
 .enlace{font-size:1.1rem}
+button.chip{border:0;font:inherit;font-size:.78rem;color:var(--texto)}
+.subnav{margin:8px 0}.subnav a.chip{font-size:.85rem;padding:6px 14px}.chip.act{background:var(--acento);color:#fff}
+.grafico{width:100%;height:auto;margin:8px 0}
+.menu-tabla{width:100%;border-collapse:collapse;font-size:.88rem}.menu-tabla td{padding:7px 4px;border-top:1px solid var(--borde);vertical-align:top}.menu-tabla td:first-child{font-weight:700;color:var(--acento);white-space:nowrap}
 .fila{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.centrar{justify-content:center;margin-top:14px}
 .dos{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .form label{display:block;font-size:.85rem;color:var(--suave);margin:8px 0}
@@ -79,7 +83,7 @@ pre.texto{white-space:pre-wrap;word-break:break-word;font:inherit;background:rgb
   </form>
 </div>
 <div id="toast" class="toast" hidden></div>
-<script>window.PERFIL = {"id": "adrian", "nombre": "Adrián", "corto": "Adrián", "color": "#7c93ff", "modulos": ["hoy", "planning", "objetivos", "repaso", "formacion"], "plataforma": "android"};</script>
+<script>window.PERFIL = {"id": "adrian", "nombre": "Adrián", "corto": "Adrián", "color": "#7c93ff", "modulos": ["hoy", "planning", "objetivos", "repaso", "formacion"], "plataforma": "android"}; window.FAM_MODS = [];</script>
 <script>
 (function () {
 'use strict';
@@ -97,14 +101,16 @@ const NAV = {
 
 // ---------- estado ----------
 function vacio() {
-  return { version: 1, perfil: P.id, sig: 1, ultima_copia: null, objetivos: [], tareas: [], programas: [],
-           planning: [], excepciones: [], registros: {}, prompts: [], notas: [] };
+  const base = { version: 1, perfil: P.id, sig: 1, ultima_copia: null, objetivos: [], tareas: [], programas: [],
+                 planning: [], excepciones: [], registros: {}, prompts: [], notas: [] };
+  (window.FAM_MODS || []).forEach(m => Object.assign(base, JSON.parse(JSON.stringify(m.defaults || {}))));
+  return base;
 }
 function cargar() {
   try { const t = localStorage.getItem(KEY); if (t) return Object.assign(vacio(), JSON.parse(t)); } catch (e) {}
   return vacio();
 }
-let S = cargar();
+let S = vacio();
 function guardar() {
   try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { toast('No se pudo guardar en este navegador'); }
 }
@@ -184,6 +190,7 @@ function vHoy() {
   if (vacioTodo) h += `<a class="aviso" href="#ajustes">📥 <strong>Aún no tienes datos.</strong> Importa tu copia en Ajustes.</a>`;
   else if (dias === null || dias >= 7) h += `<a class="aviso" href="#ajustes">💾 <strong>${dias === null ? 'Aún no has hecho copia de seguridad' : 'Última copia hace ' + dias + ' días'}.</strong> Hazla en Ajustes.</a>`;
   if (nTarj && P.modulos.includes('repaso')) h += `<a class="aviso" href="#repaso">🧠 <strong>${nTarj} tarjeta(s) de repaso</strong></a>`;
+  h += (window.FAM_MODS || []).map(m => (m.hoy ? m.hoy() : '')).join('');
   if (sesiones.length) {
     h += '<h2>🕒 Con hora</h2>';
     sesiones.forEach(e => {
@@ -373,14 +380,15 @@ const RUTAS = {
   hoy: vHoy, planning: vPlanning, sesion: vSesion, objetivos: vObjetivos, objetivo: vObjetivo, programa: vPrograma,
   repaso: vRepaso, formacion: vFormacion, prompt: vPrompt, ajustes: vAjustes,
 };
-function ruta() { const [n, a] = (location.hash.slice(1) || 'hoy').split('/'); return [n, a]; }
+const NAV_DE = { sesion: 'planning', objetivo: 'objetivos', programa: 'objetivos', prompt: 'formacion' };
+function ruta() { const [n, a, b] = (location.hash.slice(1) || 'hoy').split('/'); return [n, a, b]; }
 function render(keepScroll) {
-  const y = window.scrollY; const [n, a] = ruta();
+  const y = window.scrollY; const [n, a, b] = ruta();
   const f = RUTAS[n] || vHoy;
-  $('#vista').innerHTML = f(a);
+  $('#vista').innerHTML = f(a, b);
   const nav = Object.keys(NAV).filter(k => P.modulos.includes(k));
   const pend = P.modulos.includes('repaso') ? tarjetasPendientes().length : 0;
-  $('#nav').innerHTML = nav.map(k => `<a href="#${k}" class="${(n === k || (n === 'sesion' && k === 'planning') || ((n === 'objetivo' || n === 'programa') && k === 'objetivos') || (n === 'prompt' && k === 'formacion')) ? 'act' : ''}">${NAV[k][0]}${k === 'repaso' && pend ? `<b>${pend}</b>` : ''}<span>${NAV[k][1]}</span></a>`).join('') +
+  $('#nav').innerHTML = nav.map(k => `<a href="#${k}" class="${(n === k || NAV_DE[n] === k) ? 'act' : ''}">${NAV[k][0]}${k === 'repaso' && pend ? `<b>${pend}</b>` : ''}<span>${NAV[k][1]}</span></a>`).join('') +
     `<a href="#ajustes" class="${n === 'ajustes' ? 'act' : ''}">⚙️<span>Ajustes</span></a>`;
   if (n === 'ajustes') {
     const el = $('#almacen');
@@ -528,16 +536,29 @@ function abrirAnadir() {
   $('#anadir').hidden = false; f.querySelector('[name=texto]').focus();
 }
 
-// ---------- arranque ----------
-document.title = P.nombre + ' · Mi día';
-document.documentElement.style.setProperty('--acento', P.color);
-if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
-if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
-  navigator.serviceWorker.register('sw.js').catch(() => {});
-}
-render(false);
+// ---------- API para módulos y arranque ----------
+window.FAM = {
+  get S() { return S; }, P, nid, esc, opts, iso, hoyIso, sumaDias, fechaCorta, fechaDe, idxDia, toast, num, val, guardar, render,
+  enlaceHtml, objetivo, DIAS, copiarTexto,
+  iniciar() {
+    (window.FAM_MODS || []).forEach(m => {
+      Object.assign(RUTAS, m.rutas || {}); Object.assign(ACCIONES, m.acciones || {});
+      Object.assign(FORMS, m.forms || {}); Object.assign(NAV, m.nav || {}); Object.assign(NAV_DE, m.navDe || {});
+    });
+    S = cargar();
+    document.title = P.nombre + ' · Mi día';
+    document.documentElement.style.setProperty('--acento', P.color);
+    if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+    if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    }
+    render(false);
+  },
+};
 })();
 
 </script>
+
+<script>FAM.iniciar();</script>
 </body>
 </html>
